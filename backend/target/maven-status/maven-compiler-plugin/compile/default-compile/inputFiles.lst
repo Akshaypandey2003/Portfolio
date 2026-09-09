@@ -1,0 +1,15 @@
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\ai\prompt\PortfolioPrompts.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\config\AiConfig.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\config\SecurityConfig.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\controller\AiChatController.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\controller\ContactController.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\controller\KnowledgeIngestionController.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\dto\ApiResponse.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\dto\ChatRequest.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\dto\ChatResponse.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\dto\ContactRequest.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\entity\ContactMessage.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\PortfolioApplication.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\repository\ContactRepository.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\service\AiChatService.java
+C:\Complete web development Tutorial\Full stack Projects\Portfolio\backend\src\main\java\com\akshay\portfolio\service\KnowledgeIngestionService.java

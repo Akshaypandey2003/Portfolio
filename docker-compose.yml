@@ -1,0 +1,66 @@
+services:
+  # Full-Stack Web Application (React + Express + RAG Assistant)
+  portfolio-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: akshay-portfolio-app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    depends_on:
+      - postgres-pgvector
+    restart: unless-stopped
+
+  # Optional Java Spring Boot Backend Service
+  portfolio-backend-java:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: akshay-portfolio-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-pgvector:5432/portfolio_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - AI_CHAT_MODEL=qwen2.5:7b
+      - AI_EMBEDDING_MODEL=nomic-embed-text
+    depends_on:
+      - postgres-pgvector
+    profiles:
+      - java-backend
+
+  # PostgreSQL with pgvector for Vector RAG Storage
+  postgres-pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: akshay-pgvector
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=portfolio_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+
+  # Local LLM Engine (Optional for offline RAG)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: akshay-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    profiles:
+      - local-ai
+
+volumes:
+  pgvector_data:
+  ollama_models:
