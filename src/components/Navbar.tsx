@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <a
               id="mobile-github-btn"
-              href="https://github.com/akshaypandey-dev"
+              href="https://github.com/Akshaypandey2003"
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub"
@@ -256,7 +256,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
             <a
               id="mobile-linkedin-btn"
-              href="https://linkedin.com/in/akshay-pandey-dev"
+              href="https://linkedin.com/in/akshay-pandey-547829221"
               target="_blank"
               rel="noreferrer"
               aria-label="LinkedIn"

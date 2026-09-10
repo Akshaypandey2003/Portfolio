@@ -6,8 +6,8 @@
 - **Experience:** Approximately 2 years of experience building scalable, distributed, enterprise-grade applications.
 - **Location:** India
 - **Email:** rakshaypandey@gmail.com
-- **LinkedIn:** https://linkedin.com/in/akshay-pandey-dev
-- **GitHub:** https://github.com/akshaypandey-dev
+- **LinkedIn:** https://linkedin.com/in/akshay-pandey-547829221
+- **GitHub:** https://github.com/Akshaypandey2003
 - **Education:** Bachelor of Technology in Information Technology, LNCT Bhopal (2020 – 2024), CGPA: 8.35
 
 ## Professional Summary

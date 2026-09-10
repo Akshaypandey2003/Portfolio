@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
         {/* Back to top and socials */}
         <div className="flex items-center gap-3">
           <a
-            href="https://github.com/akshaypandey-dev"
+            href="https://github.com/Akshaypandey2003"
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub Profile"
@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
             <Github size={15} />
           </a>
           <a
-            href="https://linkedin.com/in/akshay-pandey-dev"
+            href="https://linkedin.com/in/akshay-pandey-547829221"
             target="_blank"
             rel="noreferrer"
             aria-label="LinkedIn Profile"

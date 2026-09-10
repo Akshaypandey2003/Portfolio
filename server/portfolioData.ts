@@ -135,13 +135,13 @@ export const PROFILE_DATA: ProfileData = {
     },
     {
       platform: "LinkedIn",
-      url: "https://linkedin.com/in/akshay-pandey-dev",
-      username: "akshay-pandey-dev",
+      url: "https://linkedin.com/in/akshay-pandey-547829221",
+      username: "akshay-pandey",
     },
     {
       platform: "GitHub",
-      url: "https://github.com/akshaypandey-dev",
-      username: "akshaypandey-dev",
+      url: "https://github.com/Akshaypandey2003",
+      username: "Akshaypandey2003",
     },
   ],
 };

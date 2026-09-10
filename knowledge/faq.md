@@ -25,4 +25,4 @@ Akshay has solved over 800+ Data Structures & Algorithms problems across LeetCod
 Yes, Akshay is an AWS Certified Cloud Practitioner.
 
 ## Q9: How can I contact Akshay?
-You can reach Akshay via email at rakshaypandey@gmail.com, or connect on LinkedIn (https://linkedin.com/in/akshay-pandey-dev) or GitHub (https://github.com/akshaypandey-dev). You can also use the contact form on this portfolio website!
+You can reach Akshay via email at rakshaypandey@gmail.com, or connect on LinkedIn (https://linkedin.com/in/akshay-pandey-547829221) or GitHub (https://github.com/Akshaypandey2003). You can also use the contact form on this portfolio website!
