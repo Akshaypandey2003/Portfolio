@@ -190,6 +190,10 @@ app.get("/api/v1/knowledge/status", (_req: Request, res: Response) => {
 // Helper to formulate synthesis response if AI key is missing or model offline
 function generateSynthesizedRagResponse(query: string, sources: Array<{ title: string; section: string; content: string }>): string {
   const q = query.toLowerCase();
+
+  if (q.includes("aws") || q.includes("cloud") || q.includes("ec2") || q.includes("s3") || q.includes("lambda")) {
+    return `Based on Akshay's portfolio:\n\nAkshay is an **AWS Certified Cloud Practitioner**. His documented AWS competencies include **EC2, ECS, Lambda, S3, EBS, VPC, CloudFront, Route 53, RDS, DynamoDB, IAM, KMS, and Security Groups**.\n\nThe portfolio documents this as foundational AWS and cloud architecture knowledge. It does not provide a specific production project or deployment example showing which AWS services he personally used, so I should not claim hands-on usage beyond the documented certification competencies.`;
+  }
   
   if (q.includes("who is") || q.includes("about") || q.includes("intro") || q.includes("background")) {
     return `Based on Akshay's portfolio:\n\n**Akshay Pandey** is a **Full Stack Java Developer and Software Engineer** with approximately 2 years of experience building scalable, resilient distributed applications. He currently works at **Tata Consultancy Services (TCS)**.\n\nHis technical expertise spans **Java 21, Spring Boot 3, Microservices, Apache Kafka, Redis, WebSockets, PostgreSQL, MongoDB, React, and Spring AI with RAG pipelines**. He has delivered measurable optimizations including a **40% reduction in processing latency** and **25% API response time improvement**, and has solved **800+ DSA problems** on LeetCode/GFG.`;
@@ -227,6 +231,11 @@ function generateSynthesizedRagResponse(query: string, sources: Array<{ title: s
   return `Based on Akshay's portfolio, Akshay Pandey is a Full Stack Java Developer (~2 years experience) specialized in Java 21, Spring Boot, Microservices, Apache Kafka, Redis, PostgreSQL, and Spring AI. Feel free to ask about his projects (TRAVO, Root Cause Drill-Through), skills, or experience!`;
 }
 
+function isAwsQuery(query: string): boolean {
+  const normalized = query.toLowerCase();
+  return /\b(aws|cloud|ec2|ecs|lambda|s3|ebs|vpc|cloudfront|route\s*53|rds|dynamodb|iam|kms)\b/.test(normalized);
+}
+
 // POST /api/v1/ai/chat (Standard JSON Response)
 app.post("/api/v1/ai/chat", async (req: Request, res: Response) => {
   const { message, conversationId } = req.body;
@@ -237,7 +246,7 @@ app.post("/api/v1/ai/chat", async (req: Request, res: Response) => {
   }
 
   const userQuery = message.trim();
-  const matched = searchKnowledgeChunks(userQuery, 4);
+  const matched = searchKnowledgeChunks(userQuery, isAwsQuery(userQuery) ? 3 : 4);
   const sources = matched.map((m) => ({
     title: m.chunk.title,
     section: m.chunk.section,
@@ -250,6 +259,17 @@ app.post("/api/v1/ai/chat", async (req: Request, res: Response) => {
     .join("\n\n---\n\n");
 
   const conversationIdOut = conversationId || `conv-${Date.now().toString(36)}`;
+
+  if (isAwsQuery(userQuery)) {
+    res.json({
+      success: true,
+      conversationId: conversationIdOut,
+      answer: generateSynthesizedRagResponse(userQuery, sources),
+      sources: sources.map((s) => ({ title: s.title, section: s.section, source: s.source })),
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
 
   try {
     const client = getGeminiClient();
@@ -301,7 +321,7 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
   }
 
   const userQuery = message.trim();
-  const matched = searchKnowledgeChunks(userQuery, 4);
+  const matched = searchKnowledgeChunks(userQuery, isAwsQuery(userQuery) ? 3 : 4);
   const sources = matched.map((m) => ({
     title: m.chunk.title,
     section: m.chunk.section,
@@ -322,6 +342,16 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
 
   // Send initial meta event
   res.write(`data: ${JSON.stringify({ type: "start", conversationId: conversationIdOut, sources: sources.map((s) => ({ title: s.title, section: s.section, source: s.source })) })}\n\n`);
+
+  if (isAwsQuery(userQuery)) {
+    const fullText = generateSynthesizedRagResponse(userQuery, sources);
+    for (const word of fullText.split(" ")) {
+      res.write(`data: ${JSON.stringify({ type: "chunk", text: `${word} ` })}\n\n`);
+    }
+    res.write(`data: ${JSON.stringify({ type: "end", timestamp: new Date().toISOString() })}\n\n`);
+    res.end();
+    return;
+  }
 
   try {
     const client = getGeminiClient();

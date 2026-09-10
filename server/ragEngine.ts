@@ -80,11 +80,16 @@ export function searchKnowledgeChunks(query: string, topK: number = 4): { chunk:
     ingestKnowledgeDirectory();
   }
 
+  const stopWords = new Set([
+    "a", "an", "and", "are", "did", "does", "for", "how", "i", "in",
+    "is", "of", "on", "the", "to", "was", "what", "when", "where", "which",
+    "who", "why", "with",
+  ]);
   const queryTerms = query
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length > 1);
+    .filter((w) => w.length > 1 && !stopWords.has(w));
 
   if (queryTerms.length === 0) {
     return chunksDatabase.slice(0, topK).map((chunk) => ({ chunk, score: 1.0 }));
