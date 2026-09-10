@@ -9,7 +9,8 @@ import {
   IngestionStatus,
 } from "../types";
 
-export const API_BASE = "/api/v1";
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
+export const API_BASE = `${configuredApiBase || ""}/api/v1`;
 
 export async function fetchProfile(): Promise<Profile> {
   const res = await fetch(`${API_BASE}/profile`);
