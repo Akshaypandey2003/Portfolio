@@ -27,13 +27,14 @@ app.use(express.json({ limit: "10mb" }));
 
 const allowedOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
 app.use((req: Request, res: Response, next) => {
   const origin = req.headers.origin;
-  if (origin && (allowedOrigins.length === 0 || allowedOrigins.includes(origin))) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  const normalizedOrigin = origin?.replace(/\/+$/, "");
+  if (normalizedOrigin && (allowedOrigins.length === 0 || allowedOrigins.includes(normalizedOrigin))) {
+    res.setHeader("Access-Control-Allow-Origin", normalizedOrigin);
     res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
