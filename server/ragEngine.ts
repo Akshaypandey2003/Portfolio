@@ -83,7 +83,7 @@ export function searchKnowledgeChunks(query: string, topK: number = 4): { chunk:
   const stopWords = new Set([
     "a", "an", "and", "are", "did", "does", "for", "how", "i", "in",
     "is", "of", "on", "the", "to", "was", "what", "when", "where", "which",
-    "who", "why", "with",
+    "who", "why", "with", "akshay",
   ]);
   const queryTerms = query
     .toLowerCase()
@@ -135,6 +135,15 @@ export function searchKnowledgeChunks(query: string, topK: number = 4): { chunk:
         if (related.some((rel) => lowerContent.includes(rel))) {
           score += 6.0;
         }
+      }
+    }
+
+    const asksAboutCurrentOrganization =
+      /\b(current|present|organization|organisation|company|employer|job|role|workplace)\b/.test(query.toLowerCase());
+    if (asksAboutCurrentOrganization && chunk.category === "experience") {
+      score += 12.0;
+      if (chunk.section.toLowerCase().includes("current position")) {
+        score += 8.0;
       }
     }
 

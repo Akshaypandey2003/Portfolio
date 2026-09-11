@@ -189,8 +189,25 @@ app.get("/api/v1/knowledge/status", (_req: Request, res: Response) => {
  * ----------------------------------------------------------- */
 
 // Helper to formulate synthesis response if AI key is missing or model offline
-function generateSynthesizedRagResponse(query: string, sources: Array<{ title: string; section: string; content: string }>): string {
+function generateSynthesizedRagResponse(query: string, sources: Array<{ title: string; section: string; source?: string; content: string }>): string {
   const q = query.toLowerCase();
+
+  if (/\b(current|present|organization|organisation|company|employer|job|role|workplace)\b/.test(q)) {
+    const experience = sources.find((source) => source.source === "experience.md")?.content;
+    if (experience) {
+      return `Based on Akshay's portfolio, he currently works as a **Java Developer / Software Engineer** at **Tata Consultancy Services (TCS)** (July 2024 - Present).
+
+His documented contributions there include:
+- Designing and maintaining Java 21 and Spring Boot microservices.
+- Moving bottlenecked workflows to asynchronous Apache Kafka pipelines.
+- Building Redis caching and database query optimizations, improving API response time by **25%** and reducing processing latency by **40%**.
+- Implementing Resilience4j fault-tolerance patterns and Spring Security JWT/RBAC authorization.
+- Developing WebSocket feeds for real-time industrial telemetry and root-cause inspection.
+- Containerizing services with Docker and writing JUnit 5 and Mockito tests.
+
+The portfolio describes these engineering contributions, but it does not name a specific internal TCS product or client project.`;
+    }
+  }
 
   if (q.includes("aws") || q.includes("cloud") || q.includes("ec2") || q.includes("s3") || q.includes("lambda")) {
     return `Based on Akshay's portfolio:\n\nAkshay is an **AWS Certified Cloud Practitioner**. His documented AWS competencies include **EC2, ECS, Lambda, S3, EBS, VPC, CloudFront, Route 53, RDS, DynamoDB, IAM, KMS, and Security Groups**.\n\nThe portfolio documents this as foundational AWS and cloud architecture knowledge. It does not provide a specific production project or deployment example showing which AWS services he personally used, so I should not claim hands-on usage beyond the documented certification competencies.`;
@@ -237,6 +254,26 @@ function isAwsQuery(query: string): boolean {
   return /\b(aws|cloud|ec2|ecs|lambda|s3|ebs|vpc|cloudfront|route\s*53|rds|dynamodb|iam|kms)\b/.test(normalized);
 }
 
+function isUnsupportedPersonalQuery(query: string): boolean {
+  const normalized = query.toLowerCase();
+  return /\b(date of birth|birth date|birthday|age|home address|personal address|phone number|mobile number|salary|ssn|social security)\b/.test(normalized);
+}
+
+function insufficientInformationResponse(): string {
+  return "I don't have enough information in Akshay's portfolio to answer that accurately. The knowledge base does not include this personal detail.";
+}
+
+function retrieveSources(query: string) {
+  return searchKnowledgeChunks(query, isAwsQuery(query) ? 3 : 4)
+    .filter((match) => match.score >= 5)
+    .map((match) => ({
+      title: match.chunk.title,
+      section: match.chunk.section,
+      source: match.chunk.source,
+      content: match.chunk.content,
+    }));
+}
+
 // POST /api/v1/ai/chat (Standard JSON Response)
 app.post("/api/v1/ai/chat", async (req: Request, res: Response) => {
   const { message, conversationId } = req.body;
@@ -247,19 +284,24 @@ app.post("/api/v1/ai/chat", async (req: Request, res: Response) => {
   }
 
   const userQuery = message.trim();
-  const matched = searchKnowledgeChunks(userQuery, isAwsQuery(userQuery) ? 3 : 4);
-  const sources = matched.map((m) => ({
-    title: m.chunk.title,
-    section: m.chunk.section,
-    source: m.chunk.source,
-    content: m.chunk.content,
-  }));
+  const sources = isUnsupportedPersonalQuery(userQuery) ? [] : retrieveSources(userQuery);
 
-  const contextText = matched
-    .map((m, idx) => `[Context Item ${idx + 1} - Source: ${m.chunk.source} | Section: ${m.chunk.section}]\n${m.chunk.content}`)
+  const contextText = sources
+    .map((source, idx) => `[Context Item ${idx + 1} - Source: ${source.source} | Section: ${source.section}]\n${source.content}`)
     .join("\n\n---\n\n");
 
   const conversationIdOut = conversationId || `conv-${Date.now().toString(36)}`;
+
+  if (isUnsupportedPersonalQuery(userQuery) || sources.length === 0) {
+    res.json({
+      success: true,
+      conversationId: conversationIdOut,
+      answer: insufficientInformationResponse(),
+      sources: [],
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
 
   if (isAwsQuery(userQuery)) {
     res.json({
@@ -322,16 +364,10 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
   }
 
   const userQuery = message.trim();
-  const matched = searchKnowledgeChunks(userQuery, isAwsQuery(userQuery) ? 3 : 4);
-  const sources = matched.map((m) => ({
-    title: m.chunk.title,
-    section: m.chunk.section,
-    source: m.chunk.source,
-    content: m.chunk.content,
-  }));
+  const sources = isUnsupportedPersonalQuery(userQuery) ? [] : retrieveSources(userQuery);
 
-  const contextText = matched
-    .map((m, idx) => `[Context Item ${idx + 1} - Source: ${m.chunk.source} | Section: ${m.chunk.section}]\n${m.chunk.content}`)
+  const contextText = sources
+    .map((source, idx) => `[Context Item ${idx + 1} - Source: ${source.source} | Section: ${source.section}]\n${source.content}`)
     .join("\n\n---\n\n");
 
   const conversationIdOut = conversationId || `conv-${Date.now().toString(36)}`;
@@ -343,6 +379,13 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
 
   // Send initial meta event
   res.write(`data: ${JSON.stringify({ type: "start", conversationId: conversationIdOut, sources: sources.map((s) => ({ title: s.title, section: s.section, source: s.source })) })}\n\n`);
+
+  if (isUnsupportedPersonalQuery(userQuery) || sources.length === 0) {
+    res.write(`data: ${JSON.stringify({ type: "chunk", text: insufficientInformationResponse() })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "end", timestamp: new Date().toISOString() })}\n\n`);
+    res.end();
+    return;
+  }
 
   if (isAwsQuery(userQuery)) {
     const fullText = generateSynthesizedRagResponse(userQuery, sources);
@@ -359,7 +402,7 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
     if (client) {
       const prompt = `Retrieved Portfolio Knowledge Context:\n${contextText}\n\nUser Question:\n${userQuery}\n\nPlease provide a clear, well-structured, professional answer using markdown based on the context above.`;
       
-      const streamResponse = await client.models.generateContentStream({
+      const response = await client.models.generateContent({
         model: "gemini-3.7-flash",
         contents: prompt,
         config: {
@@ -368,11 +411,9 @@ app.post("/api/v1/ai/stream", async (req: Request, res: Response) => {
         },
       });
 
-      for await (const chunk of streamResponse) {
-        const chunkText = chunk.text;
-        if (chunkText) {
-          res.write(`data: ${JSON.stringify({ type: "chunk", text: chunkText })}\n\n`);
-        }
+      const answer = response.text || generateSynthesizedRagResponse(userQuery, sources);
+      for (let i = 0; i < answer.length; i += 240) {
+        res.write(`data: ${JSON.stringify({ type: "chunk", text: answer.slice(i, i + 240) })}\n\n`);
       }
 
       res.write(`data: ${JSON.stringify({ type: "end", timestamp: new Date().toISOString() })}\n\n`);
