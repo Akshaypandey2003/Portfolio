@@ -85,4 +85,4 @@ The Spring Boot REST API will be available at `http://localhost:8080`.
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Motion (Framer Motion), Lucide React, Canvas Confetti.
 - **Backend (Node/Express)**: Express 4, `@google/genai` (Gemini 3.7 Flash), Vector Search Engine, SSE Streaming.
 - **Backend (Java/Spring)**: Java 21, Spring Boot 3.3, Spring AI, Spring Security, Spring Data JPA, PostgreSQL (pgvector), Apache Kafka, Redis.
-- **DevOps**: Docker, Docker Compose, Multi-stage builds, G1GC tuning.
+- **DevOps**: Docker, Docker Compose, Multi-stage builds.
