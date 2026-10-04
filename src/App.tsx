@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import {
   Profile,
   Project,
@@ -135,6 +136,9 @@ export default function App() {
         experience={experience}
         achievements={achievements}
       />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }
